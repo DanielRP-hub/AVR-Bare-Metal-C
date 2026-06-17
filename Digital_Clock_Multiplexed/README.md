@@ -6,7 +6,7 @@ This project is a firmware implementation of a real-time digital clock (HH:MM:SS
 This project demonstrates strong foundational knowledge in **embedded C, bitwise operations, GPIO register manipulation, and software-based debouncing.**
 
 ## Hardware Architecture & Pin Mapping
-* **Microcontroller:** AVR (e.g., ATmega2560) @ 16MHz
+* **Microcontroller:** AVR ATmega2560 @ 16MHz
 * **PORTF (`DDRF` / `PORTF`):** Configured as an 8-bit output to drive the individual segments (A-G) of the display.
 * **PORTK (`DDRK` / `PORTK`):** Configured as an output to act as the multiplexing selector. It sequentially enables each of the 6 digits fast enough to exploit the human eye's persistence of vision (POV).
 * **PORTH (`DDRH` / `PINH`):** Configured with specific pins as inputs (Pins 3, 4, 5, and 6) to read external push-buttons for Clock Stop/Resume and Time Adjustment logic.
