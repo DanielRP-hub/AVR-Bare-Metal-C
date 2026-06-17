@@ -24,6 +24,3 @@ This repository contains low-level C configurations and drivers for AVR microcon
 1. Clone this repository: `git clone https://github.com/YourUsername/YourRepoName.git`
 2. Open the project in your preferred AVR IDE.
 3. Build the solution and flash the `.hex` file directly to the microcontroller via your programmer.
-
-## Schematics / Visuals
-*(If you have images of your circuits, schematics, or a short GIF of the hardware working, drop the image files in your repository and link them here using: `![Alt Text](image_name.png)`)*
