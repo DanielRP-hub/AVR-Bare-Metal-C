@@ -18,4 +18,4 @@ This repository contains low-level C configurations and drivers for AVR microcon
 
 ## Technical Highlights
 * **Register-Level C Programming:** Developed entirely in C, utilizing bitwise operations to configure specific hardware flags.
-* **Hardware Interfacing:** Successfully isolated control signals using optocouplers and handled bouncing issues on physical inputs.
+* **Hardware Interfacing:** Successfully isolated control signals using drivers and handled bouncing issues on physical inputs.
