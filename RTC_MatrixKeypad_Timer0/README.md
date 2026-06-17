@@ -1,7 +1,7 @@
-# Real-Time Calendar Clock with Matrix Keypad Driver
+# Calendar Clock with Matrix Keypad Driver
 
 ## Project Overview
-This project is an advanced implementation of a Real-Time Clock (RTC) and calendar system built from the ground up for AVR microcontrollers. It features an asynchronous timebase driven by hardware timer interrupts, a dynamic calendar logic supporting leap years, and a fully functional 4x4 matrix keypad driver for user input.
+This project is an advanced implementation of a calendar system built from the ground up for AVR microcontrollers. It features an asynchronous timebase driven by hardware timer interrupts, a dynamic calendar logic supporting leap years, and a fully functional 4x4 matrix keypad driver for user input.
 
 This repository demonstrates the ability to manage complex state machines, write peripheral drivers, and utilize hardware timers to prevent CPU blocking.
 
