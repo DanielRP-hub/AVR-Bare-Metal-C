@@ -19,8 +19,3 @@ This repository contains low-level C configurations and drivers for AVR microcon
 ## Technical Highlights
 * **Register-Level C Programming:** Developed entirely in C, utilizing bitwise operations to configure specific hardware flags.
 * **Hardware Interfacing:** Successfully isolated control signals using optocouplers and handled bouncing issues on physical inputs.
-
-## How to Compile and Run
-1. Clone this repository: `git clone https://github.com/YourUsername/YourRepoName.git`
-2. Open the project in your preferred AVR IDE.
-3. Build the solution and flash the `.hex` file directly to the microcontroller via your programmer.
