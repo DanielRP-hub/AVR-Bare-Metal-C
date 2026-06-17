@@ -1,156 +1,141 @@
 /**
  * @file main.c
- * @brief Bare-metal digital clock implementation with 6-digit multiplexed 7-segment display.
- * @details This project demonstrates direct register manipulation for GPIO control, 
- * software-based state machines for timekeeping, and manual button debouncing without external libraries.
- * * @author Daniel Ruiz Pérez
- * @date 2024-04-04
+ * @brief Interrupt-driven digital clock with alphanumeric LCD interfacing.
+ * @details Demonstrates asynchronous event handling using hardware interrupts (ISRs) 
+ * to manage user inputs independently of the main execution loop.
+ * @author Daniel Ruiz Pérez
+ * @date 2024-04-06
  */
 
-#define F_CPU 16000000ul
+#define F_CPU 16000000UL // Corrected to 16 MHz standard AVR clock
+
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
+#include "LCD/lcd.h"
+#include <stdio.h>
 
+// Volatile keyword used to prevent compiler optimization on variables modified inside ISRs
 volatile uint8_t milisegundos = 0;
 volatile uint8_t segundos = 0;
 volatile uint8_t minutos = 0;
 volatile uint8_t horas = 0;
 volatile uint8_t stop = 0;
-
-// Hexadecimal array for 7-segment display digits (0-9)
-const uint8_t valores[] = {
-    0b00111111, // 0
-    0b00000110, // 1
-    0b01011011, // 2
-    0b01001111, // 3
-    0b01100110, // 4
-    0b01101101, // 5
-    0b01111101, // 6
-    0b00000111, // 7
-    0b01111111, // 8
-    0b01100111  // 9
-};
+char data[32];
 
 /**
- * @brief Sends the specific value to a single digit of the multiplexed display.
- * @param digit The digit position to enable (0 to 5).
- * @param value The numerical value to display (0 to 9).
+ * @brief Formats the time variables into a string and sends them to the LCD.
  */
-void escritura(uint8_t digit, uint8_t value) {
-    PORTF = valores[value];       // Output segment data
-    PORTK |= (1 << digit);        // Enable specific digit (common pin)
-    _delay_ms(1);                 // Brief delay for display stabilization (refresh rate)
-    PORTK &= ~(1 << digit);       // Disable digit to prevent ghosting
+void escritura() {
+    uint8_t h1 = (horas / 10);
+    uint8_t h2 = (horas % 10);
+    uint8_t m1 = (minutos / 10);
+    uint8_t m2 = (minutos % 10);
+    uint8_t s1 = (segundos / 10);
+    uint8_t s2 = (segundos % 10);
+    
+    lcd_gotoxy(0,0);
+    sprintf(data, "%d%d : %d%d : %d%d", h1, h2, m1, m2, s1, s2);
+    lcd_clrscr();
+    
+    lcd_gotoxy(1,0);
+    lcd_puts("DIGITAL CLOCK");
+    
+    lcd_gotoxy(1,1);
+    lcd_puts(data);
 }
 
 /**
- * @brief Extracts the tens and units from the time variables and updates the display.
- */
-void llamar_escritura() {
-    escritura(5, horas / 10);     // Hours tens
-    escritura(4, horas % 10);     // Hours units
-    escritura(3, minutos / 10);   // Minutes tens
-    escritura(2, minutos % 10);   // Minutes units
-    escritura(1, segundos / 10);  // Seconds tens
-    escritura(0, segundos % 10);  // Seconds units
-}
-
-/**
- * @brief Timekeeping logic. Increments counters to simulate a real-time clock.
+ * @brief Software counter simulating a clock tick.
  */
 void reloj() {
     if (!stop) {
-        milisegundos++;
-        // Assuming 10ms delay loop, 60 iterations = approx 1 second (tuning required)
-        if (milisegundos == 60) { 
-            milisegundos = 0;
-            segundos++;
-            if (segundos == 60) {
-                segundos = 0;
-                minutos++;
-                if (minutos == 60) {
-                    minutos = 0;
-                    horas++;
-                    if (horas == 24) {
-                        horas = 0;
-                    }
+        segundos++;
+        if (segundos == 60) {
+            segundos = 0;
+            minutos++;
+            if (minutos == 60) {
+                minutos = 0;
+                horas++;
+                if (horas == 24) {
+                    horas = 0;
                 }
             }
         }
     }
-    _delay_ms(10); // Base tick delay
+    _delay_ms(100); // 100ms simulation tick
 }
 
 /**
- * @brief Polls specific input pins to stop or resume the clock. Includes software debouncing.
+ * @brief Configures the External Interrupt Control Registers and sets data direction.
  */
-void detener_reanudar() {
-    // Check if Stop condition is met (Pins H5 and H6)
-    if ((PINH & (1 << 5)) && (PINH & (1 << 6))) {
-        _delay_ms(1); // Debounce delay
-        // Wait for button release while maintaining display multiplexing
-        while ((PINH & (1 << 5)) && (PINH & (1 << 6))) {
-            llamar_escritura();
-        }
-        stop = 1;
-    }
-
-    // Check if Resume condition is met
-    if (!(PINH & (1 << 5)) && !(PINH & (1 << 6))) {
-        _delay_ms(1); // Debounce delay
-        while (!(PINH & (1 << 5)) && !(PINH & (1 << 6))) {
-             llamar_escritura();
-        }
-        stop = 0;
-    }
-}
-
-/**
- * @brief Allows manual adjustment of hours and minutes when the clock is stopped.
- */
-void aumentar_H_M() {
-    if (stop == 1) {
-        // Increment Minutes (Pins H3 and H4 low)
-        if (!(PINH & (1 << 3)) && !(PINH & (1 << 4))) {
-            _delay_ms(1); // Debounce
-            while (!(PINH & (1 << 3)) && !(PINH & (1 << 4))) {
-                llamar_escritura(); 
-            }
-            minutos++;
-            if (minutos == 60) {
-                minutos = 0;
-            }
-        }
-
-        // Increment Hours (Pins H3 and H4 high)
-        if ((PINH & (1 << 3)) && (PINH & (1 << 4))) {
-            _delay_ms(1); // Debounce
-            while ((PINH & (1 << 3)) && (PINH & (1 << 4))) {
-                llamar_escritura(); 
-            }
-            horas++;
-            if (horas == 24) {
-                horas = 0;
-            }
-        }
-    }
-}
-
-int main() {
-    // 1. Hardware Initialization
-    DDRF = 0xFF; // Set PORTF as Output (7-Segment data lines)
-    DDRK = 0xFF; // Set PORTK as Output (Digit selectors for multiplexing)
+void init_interrupts() {
+    // Set PD0, PD1, PE4, PE5 as inputs for external interrupts
+    DDRD &= ~((1 << 0) | (1 << 1));  
+    DDRE &= ~((1 << 4) | (1 << 5));  
     
-    // Set specific PORTH pins as Inputs (Bits 3, 4, 5, 6)
-    DDRH &= ~((1 << 3) | (1 << 4) | (1 << 5) | (1 << 6));
+    // Configure INT0 and INT4 for Rising Edge
+    // Configure INT1 and INT5 for Falling Edge using proper bitwise clearing/setting
+    EICRA = (EICRA & ~(1 << ISC10)) | (1 << ISC01) | (1 << ISC00) | (1 << ISC11); 
+    EICRB = (EICRB & ~(1 << ISC50)) | (1 << ISC41) | (1 << ISC40) | (1 << ISC51); 
+    
+    // Enable external interrupts INT0, INT1, INT4, INT5
+    EIMSK |= ((1 << INT0) | (1 << INT1) | (1 << INT4) | (1 << INT5)); 
+    
+    sei(); // Enable global interrupts
+}
 
-    // 2. Main Super Loop
-    while (1) {
-        reloj();             // Update time counters
-        llamar_escritura();  // Refresh display
-        detener_reanudar();  // Check stop/resume buttons
-        aumentar_H_M();      // Check time adjustment buttons
+int main(int argc, char** argv) {
+    DDRB = 0xff; // Configure PORTB as output for LCD
+    
+    lcd_init(LCD_DISP_ON_CURSOR);
+    lcd_clrscr();
+    init_interrupts(); 
+    
+    while(1) {
+        reloj();
+        escritura();
     }
 
     return 0;
+}
+
+// ---------------- Interrupt Service Routines (ISRs) ----------------
+
+/**
+ * @brief ISR for INT0: Increments minutes when the clock is stopped.
+ */
+ISR(INT0_vect) {
+    if(stop == 1) {
+        minutos++;
+        if (minutos == 60) {
+            minutos = 0;
+        }
+    }
+}
+
+/**
+ * @brief ISR for INT1: Increments hours when the clock is stopped.
+ */
+ISR(INT1_vect) {
+    if (stop == 1) {
+        horas++;
+        if (horas == 24) {
+            horas = 0;
+        }
+    }
+}
+
+/**
+ * @brief ISR for INT4: Stops the clock timekeeping.
+ */
+ISR(INT4_vect) {
+    stop = 1;
+}
+
+/**
+ * @brief ISR for INT5: Resumes the clock timekeeping.
+ */
+ISR(INT5_vect) {
+    stop = 0;
 }
