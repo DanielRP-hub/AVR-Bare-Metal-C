@@ -14,7 +14,7 @@ This repository contains low-level C configurations and drivers for AVR microcon
 * **Timers and Interrupts:** Setup of Control Registers (`TCCRxA`, `TCCRxB`) for hardware delays, PWM generation, and Interrupt Service Routines (ISR).
 * **USART Communication:** Implementation of serial data transmission and reception configuring the Baud Rate Registers (`UBRRn`), Control and Status Registers (`UCSRnA`, `UCSRnB`, `UCSRnC`), and handling the Data Register (`UDRn`).
 * **SPI Protocol:** High-speed synchronous communication setup manipulating the SPI Control Register (`SPCR`), Status Register (`SPSR`), and Data Register (`SPDR`) to interface with external peripherals.
-* **I2C / TWI (Two-Wire Interface):** Configuration of the Two-Wire Interface using the Bit Rate Register (`TWBR`), Control Register (`TWCR`), and Status Register (`TWSR`) for master/slave communication with sensors and EEPROMs.
+* **I2C / TWI (Two-Wire Interface):** Configuration of the Two-Wire Interface using the Bit Rate Register (`TWBR`), Control Register (`TWCR`), and Status Register (`TWSR`) for master/slave communication with sensors.
 
 ## Technical Highlights
 * **Register-Level C Programming:** Developed entirely in C, utilizing bitwise operations to configure specific hardware flags.
