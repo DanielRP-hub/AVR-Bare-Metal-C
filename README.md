@@ -5,7 +5,7 @@ This repository contains low-level C configurations and drivers for AVR microcon
 
 ## Hardware Used
 * **Microcontroller: ATmega2560** 
-* **Components: LEDs, Push buttons, GPS NEO6, DC-motor, matrix LED** 
+* **Components: LEDs, Push buttons, GPS NEO6, DC-motor, matrix LED, LCD and matricial Keypad** 
 * **Toolchain/IDE: Microchip Studio** 
 
 ## Peripheral Configurations Included
